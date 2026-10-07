@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn[wght].woff2') format('woff2 supports variations'),
+       url('/fonts/Vazirmatn[wght].woff2') format('woff2-variations'),
+       url('/fonts/Vazirmatn-Regular.woff2') format('woff2'),
+       url('/fonts/Vazirmatn-Regular.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-Medium.woff2') format('woff2'),
+       url('/fonts/Vazirmatn-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-Bold.woff2') format('woff2'),
+       url('/fonts/Vazirmatn-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-Black.woff2') format('woff2'),
+       url('/fonts/Vazirmatn-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-sans: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  
+  /* Day Palette (Cream-Mist, Sage, Mist Blue, Lavender, Warm Charcoal) */
+  --bg-primary: #F6F3EE;
+  --bg-secondary: #EFEBE4;
+  --bg-card: rgba(255, 255, 255, 0.65);
+  --bg-card-hover: rgba(255, 255, 255, 0.82);
+  --border-glass: rgba(255, 255, 255, 0.6);
+  --border-glass-subtle: rgba(46, 42, 51, 0.08);
+  --text-primary: #2E2A33;
+  --text-secondary: #6B6572;
+  --text-muted: #9D96A5;
+  --accent-sage: #8FAE9B;
+  --accent-sage-soft: #D7E5DC;
+  --accent-mist: #9DB4C8;
+  --accent-lavender: #B8A9D9;
+  --accent-warm: #E28859;
+  --glass-shadow: 0 16px 36px -12px rgba(46, 42, 51, 0.08), 0 4px 12px -2px rgba(46, 42, 51, 0.04);
+}
+
+.dark {
+  /* Night Palette (Deep Midnight Navy, Indigo, Moon Glow, Calming Turquoise) */
+  --bg-primary: #0F1222;
+  --bg-secondary: #161B30;
+  --bg-card: rgba(28, 35, 64, 0.62);
+  --bg-card-hover: rgba(35, 44, 80, 0.8);
+  --border-glass: rgba(232, 227, 245, 0.14);
+  --border-glass-subtle: rgba(232, 227, 245, 0.06);
+  --text-primary: #E8E3F5;
+  --text-secondary: #A49EB3;
+  --text-muted: #6E687F;
+  --accent-sage: #7FD1C7;
+  --accent-sage-soft: #1E3A39;
+  --accent-mist: #5E7DA3;
+  --accent-lavender: #9181B7;
+  --accent-warm: #E9966E;
+  --glass-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.45), 0 4px 16px -2px rgba(0, 0, 0, 0.3);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100dvh;
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  overscroll-behavior-y: none;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+/* Glass and liquid styles matching ASD.png & DSA.png */
+.liquid-glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--glass-shadow);
+}
+
+.liquid-glass-subtle {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass-subtle);
+}
+
+.dark .liquid-glass-subtle {
+  background: rgba(28, 35, 64, 0.4);
+  border: 1px solid var(--border-glass-subtle);
+}
+
+.glow-orb {
+  filter: blur(60px);
+  opacity: 0.55;
+  pointer-events: none;
+  mix-blend-mode: normal;
+}
+
+/* Hide scrollbars but allow scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Safe area utilities */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6.5rem);
+}
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 0.75rem);
+}
