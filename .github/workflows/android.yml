@@ -49,6 +49,9 @@ jobs:
       - name: Build Web Application
         run: npm run build
 
+      - name: Verify Capacitor Android platform
+        run: npm ls @capacitor/android
+
       - name: Add Android Platform (if missing)
         run: |
           if [ ! -d "android" ]; then
