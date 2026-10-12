@@ -16,6 +16,10 @@ class AudioEngine {
   private channelVolumes: Map<string, number> = new Map();
   private listeners: Set<AudioEngineListener> = new Set();
 
+  // Decoded loop files (public/audio/{id}.mp3). null = file not available -> procedural fallback
+  private audioBuffers: Map<string, AudioBuffer | null> = new Map();
+  private pendingStarts: Set<string> = new Set();
+
   // Sleep timer
   private sleepTimerId: number | null = null;
   private sleepTimerRemaining: number = 0; // seconds
@@ -111,48 +115,54 @@ class AudioEngine {
     this.notify();
   }
 
+  // Loads and decodes /audio/{id}.mp3 once. It is played through Web Audio (AudioBufferSourceNode)
+  // so the loop is sample-accurate and gapless (HTMLAudioElement.loop leaves an audible gap).
+  private async loadLoopBuffer(id: string): Promise<AudioBuffer | null> {
+    if (this.audioBuffers.has(id)) return this.audioBuffers.get(id) ?? null;
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}audio/${id}.mp3`);
+      if (!res.ok) throw new Error('audio file not found');
+      const data = await res.arrayBuffer();
+      const buffer = await this.ctx!.decodeAudioData(data);
+      this.audioBuffers.set(id, buffer);
+      return buffer;
+    } catch {
+      this.audioBuffers.set(id, null);
+      return null;
+    }
+  }
+
   public async startChannel(id: string) {
-    if (this.activeChannels.has(id)) return;
+    if (this.activeChannels.has(id) || this.pendingStarts.has(id)) return;
     const ch = SOUND_CHANNELS.find((c) => c.id === id);
     if (!ch) return;
 
     const ctx = this.initContext();
+
+    // First try the recorded loop file; fall back to procedural generation if it is missing
+    this.pendingStarts.add(id);
+    const buffer = await this.loadLoopBuffer(id);
+    this.pendingStarts.delete(id);
+    if (this.activeChannels.has(id)) return;
+
     const gainNode = ctx.createGain();
     const targetVol = this.channelVolumes.get(id) ?? ch.defaultVolume;
     gainNode.gain.setValueAtTime(0.001, ctx.currentTime);
     gainNode.gain.linearRampToValueAtTime(targetVol, ctx.currentTime + 0.3);
     gainNode.connect(this.masterGain!);
 
-    // First try loading public audio file: /audio/{id}.mp3
-    const audioUrl = `/audio/${id}.mp3`;
-    let loadedFromFile = false;
-
-    try {
-      const testAudio = new Audio(audioUrl);
-      testAudio.loop = true;
-      testAudio.volume = targetVol;
-      const canPlay = await new Promise<boolean>((resolve) => {
-        const onCanPlay = () => resolve(true);
-        const onError = () => resolve(false);
-        testAudio.addEventListener('canplaythrough', onCanPlay, { once: true });
-        testAudio.addEventListener('error', onError, { once: true });
-        setTimeout(() => resolve(false), 800); // 800ms timeout
-        testAudio.load();
+    if (buffer) {
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      source.connect(gainNode);
+      source.start();
+      this.activeChannels.set(id, {
+        gainNode,
+        sources: [source],
+        isProcedural: false
       });
-
-      if (canPlay) {
-        await testAudio.play();
-        this.activeChannels.set(id, {
-          gainNode,
-          sources: [],
-          audioElement: testAudio,
-          isProcedural: false
-        });
-        loadedFromFile = true;
-      }
-    } catch {}
-
-    if (!loadedFromFile) {
+    } else {
       // Procedural Web Audio Generation
       const sources = this.createProceduralSound(ch.proceduralType, gainNode, ch);
       this.activeChannels.set(id, {
